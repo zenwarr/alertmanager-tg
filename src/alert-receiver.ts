@@ -1,28 +1,19 @@
 import { telegramSend } from "./telegram.ts";
+import { defaultMsgFormat } from "./default-alert-formatter.ts";
+import { WebhookData } from "./webhook-data.ts";
 
 
-export interface WebhookData {
-  version: string;
-  groupKey: string;
-  truncateAlerts: number;
-  status: "resolved" | "firing";
-  receiver: string;
-  groupLabels: { [key: string]: string };
-  commonLabels: { [key: string]: string };
-  commonAnnotations: { [key: string]: string };
-  externalURL: string;
-  alerts: Alert[];
+export interface FormatterTools {
+  formatDuration: (duration: number) => string;
 }
 
 
-export interface Alert {
-  status: "resolved" | "firing";
-  labels: { [key: string]: string };
-  annotations: { [key: string]: string };
-  startsAt: string;
-  endsAt: string;
-  generatorURL: string;
-  fingerprint: string;
+type AlertFormatter = (msg: WebhookData, tools: FormatterTools) => string;
+
+let alertFormatter: AlertFormatter = defaultMsgFormat;
+const formatterPath = Deno.env.get("FORMATTER_PATH");
+if (formatterPath) {
+  alertFormatter = (await import(formatterPath)).default;
 }
 
 
@@ -32,29 +23,16 @@ export function handleWebhook(data: WebhookData): Promise<void> {
 
 
 function formatMsg(data: WebhookData): string {
-  const messages: string[] = [];
-
-  for (const alert of data.alerts) {
-    const icon = alert.status === "resolved" ? "💚" : "🔥";
-    const start = new Date(alert.startsAt);
-    const end = new Date(alert.endsAt);
-    const duration = end.getTime() - start.getTime();
-    const formattedDuration = duration > 0 ? formatDuration(duration) : null;
-
-    let msg = `${ icon } <b>${ alert.status.toUpperCase() }</b> ${ icon } ${ alert.labels.name }
-${ alert.annotations.description }`;
-    if (formattedDuration) {
-      msg += ` (for ${ formattedDuration })`;
-    }
-
-    messages.push(msg);
+  try {
+    return alertFormatter(data, { formatDuration });
+  } catch (err) {
+    console.error(`Failed to format message: ${ err.message }, using default formatter now`);
+    return defaultMsgFormat(data, { formatDuration });
   }
-
-  return messages.join("\n\n");
 }
 
 
-function formatDuration(ms: number) {
+export function formatDuration(ms: number) {
   const seconds = Math.floor(ms / 1000);
   const minutes = Math.floor(seconds / 60);
   const hours = Math.floor(minutes / 60);
