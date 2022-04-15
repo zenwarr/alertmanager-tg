@@ -1,7 +1,6 @@
 FROM denoland/deno:alpine-1.20.6 as builder
 
 ADD ./src /src
-WORKDIR /src
 
 RUN cd /src && deno bundle start.ts -- /tgbot.js
 
