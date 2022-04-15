@@ -7,7 +7,7 @@ if (isNaN(HTTP_PORT)) {
   throw new Error("HTTP_PORT must be provided and be a number, got: " + (HTTP_PORT ?? "<not defined>"));
 }
 
-console.log(`Webhook server is listening on port ${ HTTP_PORT }`);
+console.log(`Alertmanager webhook server is listening on port ${ HTTP_PORT }`);
 await serve(handler, { port: HTTP_PORT });
 
 
