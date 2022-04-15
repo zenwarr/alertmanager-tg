@@ -13,11 +13,11 @@ if (!CHAT_ID) {
 
 
 export async function telegramSend(message: string) {
-  const url = `https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`;
-  await fetch(url, {
-    method: 'POST',
+  const url = `https://api.telegram.org/bot${ BOT_TOKEN }/sendMessage`;
+  const res = await fetch(url, {
+    method: "POST",
     headers: {
-      'Content-Type': 'application/json',
+      "Content-Type": "application/json",
     },
     body: JSON.stringify({
       chat_id: CHAT_ID,
@@ -25,4 +25,10 @@ export async function telegramSend(message: string) {
       parse_mode: "HTML"
     }),
   });
+
+  if (res.status !== 200) {
+    throw new Error(`Failed to send notification, got status: ${ res.status }`);
+  } else {
+    console.log(`Notification sent`);
+  }
 }
