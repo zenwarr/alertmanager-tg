@@ -1,6 +1,6 @@
-import { telegramSend } from "./telegram.ts";
+import { sendAlerts } from "./telegram.ts";
 import { defaultMsgFormat } from "./default-alert-formatter.ts";
-import { WebhookData } from "./webhook-data.ts";
+import { Alert, WebhookData } from "./webhook-data.ts";
 
 
 export interface FormatterTools {
@@ -8,7 +8,7 @@ export interface FormatterTools {
 }
 
 
-type AlertFormatter = (msg: WebhookData, tools: FormatterTools) => string;
+type AlertFormatter = (msg: Alert[], tools: FormatterTools) => string;
 
 let alertFormatter: AlertFormatter = defaultMsgFormat;
 const formatterPath = Deno.env.get("FORMATTER_PATH");
@@ -18,16 +18,20 @@ if (formatterPath) {
 
 
 export function handleWebhook(data: WebhookData): Promise<void> {
-  return telegramSend(formatMsg(data));
+  return sendAlerts(formatAlerts(data.alerts));
 }
 
 
-function formatMsg(data: WebhookData): string {
+export function formatAlerts(alerts: Alert[]): string {
   try {
-    return alertFormatter(data, { formatDuration });
+    return alertFormatter(alerts, { formatDuration });
   } catch (err) {
-    console.error(`Failed to format message: ${ err.message }, using default formatter now`);
-    return defaultMsgFormat(data, { formatDuration });
+    if (alertFormatter !== defaultMsgFormat) {
+      return `${ alerts.length } notifications received, but we cannot show them because of a formatter failure`;
+    } else {
+      console.error(`Failed to format message: ${ err.message }, using default formatter now`);
+      return defaultMsgFormat(alerts, { formatDuration });
+    }
   }
 }
 
@@ -39,11 +43,11 @@ export function formatDuration(ms: number) {
   const days = Math.floor(hours / 24);
 
   if (days > 0) {
-    return `${ days }d ${ hours % 24 }h ${ minutes % 60 }m ${ seconds % 60 }s`;
+    return `${ days }d ${ hours % 24 }h ${ minutes % 60 }m`;
   } else if (hours > 0) {
-    return `${ hours }h ${ minutes % 60 }m ${ seconds % 60 }s`;
+    return `${ hours }h ${ minutes % 60 }m`;
   } else if (minutes > 0) {
-    return `${ minutes }m ${ seconds % 60 }s`;
+    return `${ minutes }m`;
   } else {
     return `${ seconds }s`;
   }

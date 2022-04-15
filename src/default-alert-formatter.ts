@@ -1,11 +1,11 @@
 import { FormatterTools} from "./alert-receiver.ts";
-import { WebhookData } from "./webhook-data.ts";
+import { Alert } from "./webhook-data.ts";
 
 
-export function defaultMsgFormat(data: WebhookData, tools: FormatterTools) {
+export function defaultMsgFormat(data: Alert[], tools: FormatterTools) {
   const messages: string[] = [];
 
-  for (const alert of data.alerts) {
+  for (const alert of data) {
     const icon = alert.status === "resolved" ? "💚" : "🔥";
     const start = new Date(alert.startsAt);
     const end = new Date(alert.endsAt);

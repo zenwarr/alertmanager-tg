@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.135.0/http/server.ts";
 import { handleWebhook } from "./alert-receiver.ts";
+import { startBot } from "./telegram.ts";
 
 
 const HTTP_PORT = +(Deno.env.get("HTTP_PORT") || 8080);
@@ -8,7 +9,10 @@ if (isNaN(HTTP_PORT)) {
 }
 
 console.log(`Alertmanager webhook server is listening on port ${ HTTP_PORT }`);
-await serve(handler, { port: HTTP_PORT });
+await Promise.all([
+  serve(handler, { port: HTTP_PORT }),
+  startBot()
+]);
 
 
 async function handler(req: Request): Promise<Response> {
@@ -22,3 +26,6 @@ async function handler(req: Request): Promise<Response> {
     return new Response(null, { status: 404 });
   }
 }
+
+
+// todo: destroy bot and close db
