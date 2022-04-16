@@ -19,12 +19,12 @@ type WebhookFormatter = (data: WebhookData, tools: WebhookFormatterTools) => str
 const formatterModulePath = Deno.env.get("FORMATTER_PATH");
 let alertFormatter: AlertFormatter = defaultAlertFormat;
 if (formatterModulePath) {
-  alertFormatter = (await import(formatterModulePath)).alert;
+  alertFormatter = (await import(formatterModulePath)).alert ?? defaultAlertFormat;
 }
 
 let webhookFormatter: WebhookFormatter = defaultWebhookFormat;
 if (formatterModulePath) {
-  webhookFormatter = (await import(formatterModulePath)).webhook;
+  webhookFormatter = (await import(formatterModulePath)).webhook ?? defaultWebhookFormat;
 }
 
 export function formatWebhook(data: WebhookData, formatter?: WebhookFormatter): string {
