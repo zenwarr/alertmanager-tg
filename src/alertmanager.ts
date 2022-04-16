@@ -3,7 +3,6 @@ import { Alert } from "./webhook-data.ts";
 
 const AM_URL = Deno.env.get("ALERTMANAGER_URL") || "http://localhost:9093";
 
-
 export async function getActiveAlerts(): Promise<Alert[]> {
   const reply = await fetch(`${ AM_URL }/api/v1/alerts`, {
     headers: {

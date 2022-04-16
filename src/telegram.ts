@@ -1,7 +1,8 @@
 import { Bot } from "https://deno.land/x/grammy@v1.7.3/mod.ts";
+import { apiThrottler } from "https://deno.land/x/grammy_transformer_throttler@v1.1.2/mod.ts";
 import { deleteChat, getChats, saveChat } from "./db.ts";
 import { getActiveAlerts } from "./alertmanager.ts";
-import { formatAlerts } from "./alert-receiver.ts";
+import { formatAlert } from "./alert-formatter.ts";
 
 
 const BOT_TOKEN = Deno.env.get("BOT_TOKEN");
@@ -11,12 +12,11 @@ if (!BOT_TOKEN) {
 }
 
 const DEFAULT_CHATS = Deno.env.get("CHAT_ID")?.split(";") || [];
-
-
 const ADMINS = Deno.env.get("ADMIN_ID")?.split(";") ?? [];
 
 
 const bot = new Bot(BOT_TOKEN);
+bot.api.config.use(apiThrottler());
 
 
 function getChatsReceivingAlerts() {
@@ -33,7 +33,6 @@ function getChatsReceivingAlerts() {
 
 export async function sendAlerts(message: string) {
   for (const chatId of getChatsReceivingAlerts()) {
-    // todo: request limits
     await bot.api.sendMessage(chatId, message, {
       parse_mode: "HTML"
     });
@@ -43,7 +42,7 @@ export async function sendAlerts(message: string) {
 
 export function startBot() {
   bot.command("start", async ctx => {
-    if (!commandAllowedFrom(ctx.from?.id)) {
+    if (!isCommandAllowedFrom(ctx.from?.id)) {
       return;
     }
 
@@ -52,7 +51,7 @@ export function startBot() {
   });
 
   bot.command("stop", async ctx => {
-    if (!commandAllowedFrom(ctx.from?.id)) {
+    if (!isCommandAllowedFrom(ctx.from?.id)) {
       return;
     }
 
@@ -61,7 +60,7 @@ export function startBot() {
   });
 
   bot.command("alerts", async ctx => {
-    if (!commandAllowedFrom(ctx.from?.id)) {
+    if (!isCommandAllowedFrom(ctx.from?.id)) {
       return;
     }
 
@@ -69,14 +68,15 @@ export function startBot() {
     if (alerts.length === 0) {
       await ctx.reply("No active alerts");
     } else {
-      await ctx.reply(formatAlerts(alerts), {
+      const msg = alerts.map(a => formatAlert(a)).join("\n\n");
+      await ctx.reply(msg, {
         parse_mode: "HTML"
       });
     }
   });
 
   bot.command("chats", async ctx => {
-    if (!commandAllowedFrom(ctx.from?.id)) {
+    if (!isCommandAllowedFrom(ctx.from?.id)) {
       return;
     }
 
@@ -89,13 +89,18 @@ export function startBot() {
     await ctx.reply("Clients receiving alerts now:\n\n" + names.join("\n"));
   });
 
+  bot.catch(async error => {
+    console.error(error);
+    await error.ctx.reply("Sorry, there was an error processing your command, check logs for details");
+  });
+
   return bot.start({
     timeout: 60
   });
 }
 
 
-function commandAllowedFrom(sender: string | number | undefined) {
+function isCommandAllowedFrom(sender: string | number | undefined) {
   if (!sender) {
     console.warn(`Ignored command from non-approved user (no sender)`);
     return false;

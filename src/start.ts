@@ -1,7 +1,24 @@
 import { serve } from "https://deno.land/std@0.135.0/http/server.ts";
 import { handleWebhook } from "./alert-receiver.ts";
-import { startBot } from "./telegram.ts";
+import { destroyBot, startBot } from "./telegram.ts";
+import { destroyDb } from "./db.ts";
 
+
+Deno.addSignalListener("SIGINT", async () => {
+  console.log("SIGINT received, shutting down...");
+  await stop();
+});
+
+Deno.addSignalListener("SIGTERM", async () => {
+  console.log("SIGTERM received, shutting down...");
+  await stop();
+});
+
+async function stop() {
+  destroyDb();
+  await destroyBot();
+  Deno.exit(0);
+}
 
 const HTTP_PORT = +(Deno.env.get("HTTP_PORT") || 8080);
 if (isNaN(HTTP_PORT)) {
@@ -14,7 +31,6 @@ await Promise.all([
   startBot()
 ]);
 
-
 async function handler(req: Request): Promise<Response> {
   const path = new URL(req.url).pathname;
   if (path === "/" && req.method === "POST") {
@@ -26,6 +42,3 @@ async function handler(req: Request): Promise<Response> {
     return new Response(null, { status: 404 });
   }
 }
-
-
-// todo: destroy bot and close db

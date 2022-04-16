@@ -1,7 +1,7 @@
 export interface WebhookData {
   version: string;
   groupKey: string;
-  truncateAlerts: number;
+  truncatedAlerts: number;
   status: "resolved" | "firing";
   receiver: string;
   groupLabels: { [key: string]: string };

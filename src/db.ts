@@ -9,14 +9,14 @@ db.query(`
   )
 `);
 
-
 export function saveChat(chatId: string) {
   db.query(`
     INSERT
-    OR IGNORE INTO chats (id) VALUES (?)
+      OR IGNORE
+      INTO chats (id)
+      VALUES (?)
   `, [ chatId ]);
 }
-
 
 export function getChats(): string[] {
   return db.query(`
@@ -25,7 +25,6 @@ export function getChats(): string[] {
   `).map(r => r[0] as string);
 }
 
-
 export function deleteChat(chatId: string) {
   db.query(`
     DELETE
@@ -33,7 +32,6 @@ export function deleteChat(chatId: string) {
       WHERE id = ?
   `, [ chatId ]);
 }
-
 
 export function destroyDb() {
   db.close();
