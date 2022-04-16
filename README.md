@@ -13,6 +13,7 @@ Configuration is done via environment variables.
 - `ALERTMANAGER_URL`: the url of the alertmanager instance. Required for commands like `/alerts` to work.
 - `FORMATTER_PATH`: the path to a script that generates messages from alerts. See below for details. If not defined,
   default formatted is used.
+- `HTTP_PORT`: the port the http server listens on. Defaults to 8080.
 
 ## Supported commands
 
@@ -69,4 +70,19 @@ alertmanager-telegram:
     - CHAT_ID
     - ADMIN_ID
     - ALERTMANAGER_URL=http://alertmanager:9093
+```
+
+## Configure alertmanager
+
+Example configuration:
+
+```yaml
+receivers:
+  - name: 'telegram'
+    webhook_configs:
+      - send_resolved: true
+        url: 'http://alertmanager-telegram:8080'
+
+route:
+  receiver: 'telegram'
 ```
