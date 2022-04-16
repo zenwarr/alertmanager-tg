@@ -14,7 +14,6 @@ export function defaultAlertFormat(alert: Alert, tools: AlertFormatterTools) {
   const icon = alert.status === "resolved" ? "💚" : "🔥";
 
   const duration = new Date(alert.endsAt).getTime() - new Date(alert.startsAt).getTime();
-  console.log("duration: ", duration);
   const formattedDuration = duration > 0 ? tools.formatDuration(duration) : null;
 
   const labels = Object.keys(alert.labels).map(label => `${ label }: ${ alert.labels[label] }`).join("\n");
