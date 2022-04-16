@@ -17,8 +17,14 @@ export function defaultAlertFormat(alert: Alert, tools: AlertFormatterTools) {
   const duration = end.getTime() - start.getTime();
   const formattedDuration = duration > 0 ? tools.formatDuration(duration) : null;
 
-  let msg = `${ icon } <b>${ alert.status.toUpperCase() }</b> ${ icon } ${ alert.labels.name }
-${ alert.annotations.description }`;
+  const labels = Object.keys(alert.labels).map(label => `${ label }: ${ alert.labels[label] }`).join("\n");
+  const annotations = Object.keys(alert.annotations).map(annotation => `${ annotation }: ${ alert.annotations[annotation] }`).join("\n");
+
+  let msg = `${ icon } <b>${ alert.status.toUpperCase() }</b> ${ icon } ${ alert.labels.alertname }
+<b>Labels:</b>
+${ labels }
+<b>Annotations:</b>
+${ annotations }`;
   if (formattedDuration) {
     msg += ` (for ${ formattedDuration })`;
   }
