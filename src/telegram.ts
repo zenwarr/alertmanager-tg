@@ -55,6 +55,11 @@ export function startBot() {
       return;
     }
 
+    if (DEFAULT_CHATS.includes("" + ctx.chat.id)) {
+      await ctx.reply(`This chat (id: ${ ctx.chat.id }) is configured in bot settings, you cannot unsubscribe it with a command`);
+      return;
+    }
+
     await deleteChat("" + ctx.chat.id);
     await ctx.reply(`Alerts are off for this chat (id: ${ ctx.chat.id })`);
   });
