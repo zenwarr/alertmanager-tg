@@ -10,4 +10,4 @@ USER deno
 
 COPY --from=builder /tgbot.js /tgbot.js
 
-CMD ["run", "--allow-net", "--allow-env", "/tgbot.js"]
+CMD ["run", "--allow-net", "--allow-env", "--allow-read", "--allow-write", "/tgbot.js"]
