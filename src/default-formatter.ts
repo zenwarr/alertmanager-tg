@@ -12,9 +12,8 @@ export function defaultWebhookFormat(data: WebhookData, tools: WebhookFormatterT
 
 export function defaultAlertFormat(alert: Alert, tools: AlertFormatterTools) {
   const icon = alert.status === "resolved" ? "💚" : "🔥";
-  const start = new Date(alert.startsAt);
-  const end = new Date(alert.endsAt);
-  const duration = end.getTime() - start.getTime();
+
+  const duration = new Date(alert.endsAt).getTime() - new Date(alert.startsAt).getTime();
   const formattedDuration = duration > 0 ? tools.formatDuration(duration) : null;
 
   const labels = Object.keys(alert.labels).map(label => `${ label }: ${ alert.labels[label] }`).join("\n");
@@ -26,7 +25,7 @@ ${ labels }
 <b>Annotations:</b>
 ${ annotations }`;
   if (formattedDuration) {
-    msg += ` (for ${ formattedDuration })`;
+    msg += `\n<b>Duration:<\b> ${ formattedDuration }`;
   }
 
   return msg;
