@@ -87,8 +87,12 @@ export function startBot() {
 
     const names: string[] = [];
     for (const chatId of getChatsReceivingAlerts()) {
-      const chat: any = await bot.api.getChat(chatId);
-      names.push(chat.username ? `@${ chat.username }` : (chat.title || "?") + ` (${ chat.type })`);
+      try {
+        const chat: any = await bot.api.getChat(chatId);
+        names.push(chat.username ? `@${ chat.username }` : (chat.title || "?") + ` (${ chat.type })`);
+      } catch (error: any) {
+        names.push(`#${ chatId } (failed to get chat name, error: ${ error?.message ?? "unknown" })`);
+      }
     }
 
     await ctx.reply("Clients receiving alerts now:\n\n" + names.join("\n"));
