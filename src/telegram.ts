@@ -31,12 +31,23 @@ function getChatsReceivingAlerts() {
 }
 
 
-export async function sendAlerts(message: string) {
+/**
+ * Sends alert to all connected chats and returns count of failed sends
+ */
+export async function sendAlerts(message: string): Promise<number> {
+  let failedCount = 0;
   for (const chatId of getChatsReceivingAlerts()) {
-    await bot.api.sendMessage(chatId, message, {
-      parse_mode: "HTML"
-    });
+    try {
+      await bot.api.sendMessage(chatId, message, {
+        parse_mode: "HTML"
+      });
+    } catch (error) {
+      console.error(`Error sending message to chat ${ chatId }`, error);
+      ++failedCount;
+    }
   }
+
+  return failedCount;
 }
 
 
