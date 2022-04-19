@@ -1,4 +1,4 @@
-import { Bot } from "https://deno.land/x/grammy@v1.7.3/mod.ts";
+import { Bot } from "https://deno.land/x/grammy@v1.8.0/mod.ts";
 import { apiThrottler } from "https://deno.land/x/grammy_transformer_throttler@v1.1.2/mod.ts";
 import { deleteChat, getChats, saveChat } from "./db.ts";
 import { getActiveAlerts } from "./alertmanager.ts";
