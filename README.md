@@ -2,6 +2,8 @@ This bot acts like a webhook handler for alertmanager.
 It sends a message to a chat when a new alert is received.
 It also supports commands and can show alerts that are currently active.
 
+![License](https://img.shields.io/badge/license-MIT-green?style=for-the-badge)
+
 ## Configuration
 
 Configuration is done via environment variables.
